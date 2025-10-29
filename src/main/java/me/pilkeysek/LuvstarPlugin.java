@@ -3,12 +3,12 @@ package me.pilkeysek;
 import me.pilkeysek.command.ForceRelinquishCommandExecutor;
 import me.pilkeysek.command.LockCommandExecutor;
 import me.pilkeysek.command.RelinquishCommandExecutor;
+import me.pilkeysek.command.TestcommandExecutor;
 import me.pilkeysek.command.UnlockCommandExecutor;
-import me.pilkeysek.data.ChestLockData;
-import me.pilkeysek.data.ChestLockUpdateResult;
 import me.pilkeysek.listener.BlockEventsListener;
 import me.pilkeysek.listener.EntityEventsListener;
 import me.pilkeysek.listener.PlayerEventsListener;
+import me.pilkeysek.locking.LockAPI;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
@@ -17,13 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 
@@ -34,6 +27,7 @@ public class LuvstarPlugin extends JavaPlugin {
     public LuvstarPluginConfig config;
     public Configuration pluginConfig;
     public DatabaseUtil db;
+    public LockAPI lockAPI;
     public static LuvstarPlugin instance;
 
     @Override
@@ -45,11 +39,12 @@ public class LuvstarPlugin extends JavaPlugin {
         this.config = new LuvstarPluginConfig();
         defaultPluginConfig();
         this.db = new DatabaseUtil(
-                pluginConfig.getString("postgres_db"),
-                pluginConfig.getString("postgres_host"),
-                pluginConfig.getString("postgres_port"),
-                pluginConfig.getString("postgres_user"),
-                pluginConfig.getString("postgres_password"));
+            pluginConfig.getString("postgres_db"),
+            pluginConfig.getString("postgres_host"),
+            pluginConfig.getString("postgres_port"),
+            pluginConfig.getString("postgres_user"),
+            pluginConfig.getString("postgres_password"));
+        this.lockAPI = new LockAPI();
         getServer().getPluginManager().registerEvent(Type.BLOCK_BREAK, new BlockEventsListener(), Priority.Highest,
                 this);
         getServer().getPluginManager().registerEvent(Type.PLAYER_INTERACT, new PlayerEventsListener(), Priority.Highest,
@@ -61,6 +56,7 @@ public class LuvstarPlugin extends JavaPlugin {
         getCommand("unlock").setExecutor(new UnlockCommandExecutor());
         getCommand("relinquish").setExecutor(new RelinquishCommandExecutor());
         getCommand("frelinquish").setExecutor(new ForceRelinquishCommandExecutor());
+        getCommand("test").setExecutor(new TestcommandExecutor());
         
         getServer().getLogger().info("Luvstar Plugin initialized");
     }

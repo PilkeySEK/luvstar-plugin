@@ -14,3 +14,6 @@ commands:
   frelinquish:
     description: Force relinquish a chest even if you're not owner. Requires op.
     usage: /frelinquish while looking at the chest
+  test:
+    description: a
+    usage: a
