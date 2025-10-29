@@ -10,8 +10,10 @@ import me.pilkeysek.data.ChestLockUpdateResult;
 
 public class Util {
     public static String locToIntString(Location loc) {
-        return Integer.toString((int) loc.getX()) + " " + Integer.toString((int) loc.getY()) + " " + Integer.toString((int) loc.getZ());
+        return Integer.toString((int) loc.getX()) + " " + Integer.toString((int) loc.getY()) + " "
+                + Integer.toString((int) loc.getZ());
     }
+
     public static ChestLockUpdateResult updateChestLock(Block chest, String owner, boolean locked,
             boolean ignoreDifferentOwner) {
         ChestLockUpdateResult result = new ChestLockUpdateResult(chest.getLocation());
@@ -44,7 +46,8 @@ public class Util {
         else if (chest.getRelative(BlockFace.SOUTH).getType() == Material.CHEST)
             adjacentChest = chest.getRelative(BlockFace.SOUTH);
         if (adjacentChest != null) {
-            int doubleChestDbRes = LuvstarPlugin.instance.db.setChestLockData(new ChestLockData(adjacentChest.getLocation(), owner, locked));
+            int doubleChestDbRes = LuvstarPlugin.instance.db
+                    .setChestLockData(new ChestLockData(adjacentChest.getLocation(), owner, locked));
             if (doubleChestDbRes < 0) {
                 result.databaseError = true;
                 result.successfullyUpdated = false;
@@ -103,5 +106,20 @@ public class Util {
         result.successfullyUpdated = true;
         result.owner = null;
         return result;
+    }
+
+    public static byte blockFaceToSignRotationData(BlockFace blockFace) {
+        switch (blockFace) {
+            case NORTH:
+                return 4;
+            case SOUTH:
+                return 5;
+            case EAST:
+                return 2;
+            case WEST:
+                return 3;
+            default:
+                return 3;
+        }
     }
 }
