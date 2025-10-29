@@ -1,6 +1,7 @@
 package me.pilkeysek.data;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 public class ChestLockData {
     public String owner;
@@ -13,5 +14,14 @@ public class ChestLockData {
     }
     public String getWorldName() {
         return loc.getWorld().getName();
+    }
+    /**
+     * Whether the specified player can interact/break the block that this data is associated with
+     * @param player The player trying to interact/break this block
+     */
+    public boolean canDoThingsWith(Player player) {
+        if(!this.locked) return true;
+        if(this.owner.equals(player.getName())) return true;
+        return false;
     }
 }

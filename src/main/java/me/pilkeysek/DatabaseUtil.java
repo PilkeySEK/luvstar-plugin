@@ -116,7 +116,24 @@ public class DatabaseUtil {
 
     public int setChestLockData(ChestLockData data) {
         if(connection == null) return -2;
-        System.out.println("Inserting: x=" + data.loc.getX() + " y=" + data.loc.getY() + " z=" + data.loc.getZ() + " owner=" + data.owner + " locked=" + data.locked + " world=" + data.getWorldName());
         return upsertChest(data.getWorldName(), (int) data.loc.getX(), (int) data.loc.getY(), (int) data.loc.getZ(), data.owner, data.locked);
+    }
+
+    public int deleteChestLockDAta(Location loc) {
+        if(connection == null) return -2;
+        String sql = "DELETE FROM chests WHERE x = ? AND y = ? AND z = ? AND world = ?";
+        try {
+             PreparedStatement stmt = connection.prepareStatement(sql);
+
+            stmt.setInt(1, (int) loc.getX());
+            stmt.setInt(2, (int) loc.getY());
+            stmt.setInt(3, (int) loc.getZ());
+            stmt.setString(4, loc.getWorld().getName());
+            int affected = stmt.executeUpdate();
+
+            return affected;
+        } catch (SQLException e) {
+            return -1;
+        }
     }
 }
