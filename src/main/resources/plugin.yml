@@ -1,3 +1,7 @@
 name: LuvstarPlugin
 main: me.pilkeysek.LuvstarPlugin
 version: 0.1
+commands:
+  lock:
+    description: Lock a chest
+    usage: \"/lock\" while looking at the block

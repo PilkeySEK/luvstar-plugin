@@ -1,5 +1,6 @@
 package me.pilkeysek;
 
+import me.pilkeysek.data.ChestLockData;
 import me.pilkeysek.listener.BlockEventsListener;
 import me.pilkeysek.listener.PlayerEventsListener;
 
@@ -10,6 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 
@@ -21,6 +28,7 @@ public class LuvstarPlugin extends JavaPlugin {
     public Configuration pluginConfig;
     public DatabaseUtil db;
     public static LuvstarPlugin instance;
+
     @Override
     public void onEnable() {
         LuvstarPlugin.instance = this;
@@ -30,19 +38,61 @@ public class LuvstarPlugin extends JavaPlugin {
         this.config = new LuvstarPluginConfig();
         defaultPluginConfig();
         this.db = new DatabaseUtil(
-            pluginConfig.getString("postgres_db"),
-            pluginConfig.getString("postgres_host"),
-            pluginConfig.getString("postgres_port"),
-            pluginConfig.getString("postgres_user"),
-            pluginConfig.getString("postgres_password")
-        );
-        getServer().getPluginManager().registerEvent(Type.BLOCK_BREAK, new BlockEventsListener(), Priority.Highest, this);
-        getServer().getPluginManager().registerEvent(Type.PLAYER_INTERACT, new PlayerEventsListener(), Priority.Highest, this);
+                pluginConfig.getString("postgres_db"),
+                pluginConfig.getString("postgres_host"),
+                pluginConfig.getString("postgres_port"),
+                pluginConfig.getString("postgres_user"),
+                pluginConfig.getString("postgres_password"));
+        getServer().getPluginManager().registerEvent(Type.BLOCK_BREAK, new BlockEventsListener(), Priority.Highest,
+                this);
+        getServer().getPluginManager().registerEvent(Type.PLAYER_INTERACT, new PlayerEventsListener(), Priority.Highest,
+                this);
         getServer().getLogger().info("Luvstar Plugin initialized");
     }
+
     @Override
     public void onDisable() {
         logInfo("Byeee...");
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase("lock")) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(ChatColor.RED + "You must be a player to use this.");
+                return true;
+            }
+            Player player = (Player) sender;
+            Block targetBlock = player.getTargetBlock(null, 5);
+            if (targetBlock.getType() == Material.AIR) {
+                player.sendMessage(ChatColor.RED + "Too far away.");
+                return true;
+            }
+            if (targetBlock.getType() != Material.CHEST) {
+                player.sendMessage(ChatColor.RED + "Only chests can be locked.");
+                return true;
+            }
+            ChestLockData data = db.getChestLockData(targetBlock.getLocation());
+            if (data == null || data.owner.equals(player.getName())) {
+                if (data != null && data.locked) {
+                    player.sendMessage(ChatColor.RED + "The chest is already locked.");
+                    return true;
+                }
+                int res = db.setChestLockData(data == null ? new ChestLockData(targetBlock.getLocation(), player.getName(), true) : data);
+                if (res >= 1) {
+                    player.sendMessage(ChatColor.GREEN + "Locked the chest at " + (int) targetBlock.getLocation().getX() + " "
+                            + (int) targetBlock.getLocation().getY() + " " + (int) targetBlock.getLocation().getZ() + ".");
+                    return true;
+                } else {
+                    player.sendMessage(ChatColor.RED + "Something went wrong while trying to update the database.");
+                    return true;
+                }
+            } else {
+                player.sendMessage(ChatColor.RED + "This chest is owned by " + data.owner + ". You can't lock it.");
+                return true;
+            }
+        }
+        return false;
     }
 
     private void defaultPluginConfig() {
@@ -54,7 +104,7 @@ public class LuvstarPlugin extends JavaPlugin {
         default_stuff.put("postgres_password", "password");
         List<String> config_keys = getConfiguration().getKeys();
         default_stuff.forEach((key, value) -> {
-            if(!config_keys.contains(key)) {
+            if (!config_keys.contains(key)) {
                 pluginConfig.setProperty(key, value);
             }
         });
