@@ -1,7 +1,6 @@
 package me.pilkeysek.listener;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 
