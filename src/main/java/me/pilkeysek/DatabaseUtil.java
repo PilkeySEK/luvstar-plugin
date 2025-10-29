@@ -60,10 +60,11 @@ public class DatabaseUtil {
             if(!rs.next()) {
                 stmt.executeUpdate(
                     "CREATE TABLE CHESTS (" +
+                    "world VARCHAR(64)," +
                     "x INT, y INT, z INT, " +
                     "owner VARCHAR(64), " +
                     "locked BOOLEAN, " +
-                    "UNIQUE (x, y, z)" +
+                    "UNIQUE (world, x, y, z)" +
                     ")"
                 );
                 LuvstarPlugin.instance.logInfo("Created table");
@@ -73,19 +74,20 @@ public class DatabaseUtil {
         }
     }
 
-    private int upsertChest(int x, int y, int z, String owner, boolean locked) {
-        String sql = "INSERT INTO chests (x, y, z, owner, locked) VALUES (?, ?, ?, ?, ?) " +
-                     "ON CONFLICT (x, y, z) DO UPDATE " +
+    private int upsertChest(String world, int x, int y, int z, String owner, boolean locked) {
+        String sql = "INSERT INTO chests (world, x, y, z, owner, locked) VALUES (?, ?, ?, ?, ?, ?) " +
+                     "ON CONFLICT (world, x, y, z) DO UPDATE " +
                      "SET owner = EXCLUDED.owner, locked = EXCLUDED.locked " +
                      "WHERE chests.owner IS DISTINCT FROM EXCLUDED.owner OR chests.locked IS DISTINCT FROM EXCLUDED.locked";
         try {
              PreparedStatement stmt = connection.prepareStatement(sql);
 
-            stmt.setInt(1, x);
-            stmt.setInt(2, y);
-            stmt.setInt(3, z);
-            stmt.setString(4, owner);
-            stmt.setBoolean(5, locked);
+            stmt.setString(1, world);
+            stmt.setInt(2, x);
+            stmt.setInt(3, y);
+            stmt.setInt(4, z);
+            stmt.setString(5, owner);
+            stmt.setBoolean(6, locked);
             int affected = stmt.executeUpdate();
 
             return affected;
@@ -101,9 +103,9 @@ public class DatabaseUtil {
         int z = ((int)loc.getZ());
         try {
             Statement st = connection.createStatement();
-            ResultSet res = st.executeQuery("SELECT * FROM chests WHERE x = " + x + " AND y = " + y + " AND z = " + z + " LIMIT 1");
+            ResultSet res = st.executeQuery("SELECT * FROM chests WHERE x = " + x + " AND y = " + y + " AND z = " + z + " AND world = " + loc.getWorld().getName() + " LIMIT 1");
             if(!res.next()) return null;
-            ChestLockData data = new ChestLockData(res.getString("owner"), res.getBoolean("locked"));
+            ChestLockData data = new ChestLockData(loc, res.getString("owner"), res.getBoolean("locked"));
             st.close();
             return data;
         } catch (SQLException e) {
@@ -112,8 +114,8 @@ public class DatabaseUtil {
         }
     }
 
-    public int setChestLockData(Location loc, ChestLockData data) {
+    public int setChestLockData(ChestLockData data) {
         if(connection == null) return -2;
-        return upsertChest((int) loc.getX(), (int) loc.getY(), (int) loc.getZ(), data.owner, data.locked);
+        return upsertChest(data.getWorldName(), (int) data.loc.getX(), (int) data.loc.getY(), (int) data.loc.getZ(), data.owner, data.locked);
     }
 }

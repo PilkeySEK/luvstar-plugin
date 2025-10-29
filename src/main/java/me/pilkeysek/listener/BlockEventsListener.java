@@ -12,7 +12,7 @@ public class BlockEventsListener extends BlockListener {
     public void onBlockBreak(BlockBreakEvent event) {
         ChestLockData data = LuvstarPlugin.instance.db.getChestLockData(event.getBlock().getLocation());
         if(data == null) {
-            int res = LuvstarPlugin.instance.db.setChestLockData(event.getBlock().getLocation(), new ChestLockData(event.getPlayer().getUniqueId().toString(), false));
+            int res = LuvstarPlugin.instance.db.setChestLockData(new ChestLockData(event.getBlock().getLocation(), event.getPlayer().getUniqueId().toString(), false));
             LuvstarPlugin.instance.logInfo("RES: " + res);
         } else {
             LuvstarPlugin.instance.logInfo("OWNER: " + data.owner + ", LOCKED: " + data.locked);
