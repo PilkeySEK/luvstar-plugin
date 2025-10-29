@@ -3,6 +3,7 @@ package me.pilkeysek;
 import me.pilkeysek.data.ChestLockData;
 import me.pilkeysek.data.ChestLockUpdateResult;
 import me.pilkeysek.listener.BlockEventsListener;
+import me.pilkeysek.listener.EntityEventsListener;
 import me.pilkeysek.listener.PlayerEventsListener;
 
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,6 +19,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.CreatureType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -48,6 +50,8 @@ public class LuvstarPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvent(Type.BLOCK_BREAK, new BlockEventsListener(), Priority.Highest,
                 this);
         getServer().getPluginManager().registerEvent(Type.PLAYER_INTERACT, new PlayerEventsListener(), Priority.Highest,
+                this);
+        getServer().getPluginManager().registerEvent(Type.ENTITY_EXPLODE, new EntityEventsListener(), Priority.Highest,
                 this);
         getServer().getLogger().info("Luvstar Plugin initialized");
     }
@@ -85,10 +89,11 @@ public class LuvstarPlugin extends JavaPlugin {
                             + Util.locToIntString(res.loc) + ChatColor.GREEN + ".");
                 }
             } else {
-                if(res.databaseError) {
+                if (res.databaseError) {
                     player.sendMessage(ChatColor.RED + "A database error occurred.");
-                } else if(res.playerIsNotOwner) {
-                    player.sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + res.owner + ChatColor.RED + ". You can't lock it.");
+                } else if (res.playerIsNotOwner) {
+                    player.sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + res.owner
+                            + ChatColor.RED + ". You can't lock it.");
                 } else if (res.isAlreadyInThisState) {
                     player.sendMessage(ChatColor.RED + "This chest is already locked.");
                 }
@@ -120,10 +125,11 @@ public class LuvstarPlugin extends JavaPlugin {
                             + Util.locToIntString(res.loc) + ChatColor.GREEN + ".");
                 }
             } else {
-                if(res.databaseError) {
+                if (res.databaseError) {
                     player.sendMessage(ChatColor.RED + "A database error occurred.");
-                } else if(res.playerIsNotOwner) {
-                    player.sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + res.owner + ChatColor.RED + ". You can't unlock it.");
+                } else if (res.playerIsNotOwner) {
+                    player.sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + res.owner
+                            + ChatColor.RED + ". You can't unlock it.");
                 } else if (res.isAlreadyInThisState) {
                     player.sendMessage(ChatColor.RED + "This chest is already unlocked.");
                 }
@@ -145,20 +151,22 @@ public class LuvstarPlugin extends JavaPlugin {
                 return true;
             }
             ChestLockUpdateResult res = removeChestlock(targetBlock, player.getName(), false);
-            if(res.successfullyUpdated) {
+            if (res.successfullyUpdated) {
                 if (res.isDoubleChest) {
-                    player.sendMessage(ChatColor.GREEN + "Relinquished ownership of the double chest at " + ChatColor.DARK_AQUA
-                            + Util.locToIntString(res.loc) + ChatColor.GREEN + " and " + ChatColor.DARK_AQUA
-                            + Util.locToIntString(res.doubleChestLoc) + ChatColor.GREEN + ".");
+                    player.sendMessage(
+                            ChatColor.GREEN + "Relinquished ownership of the double chest at " + ChatColor.DARK_AQUA
+                                    + Util.locToIntString(res.loc) + ChatColor.GREEN + " and " + ChatColor.DARK_AQUA
+                                    + Util.locToIntString(res.doubleChestLoc) + ChatColor.GREEN + ".");
                 } else {
                     player.sendMessage(ChatColor.GREEN + "Relinquished ownership of the chest at " + ChatColor.DARK_AQUA
                             + Util.locToIntString(res.loc) + ChatColor.GREEN + ".");
                 }
             } else {
-                if(res.databaseError) {
+                if (res.databaseError) {
                     player.sendMessage(ChatColor.RED + "A database error occurred.");
                 } else if (res.playerIsNotOwner) {
-                    player.sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + res.owner + ChatColor.RED + ". You can't relinquish ownership of it.");
+                    player.sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + res.owner
+                            + ChatColor.RED + ". You can't relinquish ownership of it.");
                 }
             }
             return true;
@@ -168,7 +176,7 @@ public class LuvstarPlugin extends JavaPlugin {
                 return true;
             }
             Player player = (Player) sender;
-            if(!player.isOp()) {
+            if (!player.isOp()) {
                 player.sendMessage(ChatColor.RED + "You must be op to use this.");
                 return true;
             }
@@ -182,18 +190,21 @@ public class LuvstarPlugin extends JavaPlugin {
                 return true;
             }
             ChestLockUpdateResult res = removeChestlock(targetBlock, player.getName(), true);
-            if(res.successfullyUpdated) {
+            if (res.successfullyUpdated) {
                 if (res.isDoubleChest) {
-                    player.sendMessage(ChatColor.GREEN + "Forcibly relinquished ownership of the double chest at " + ChatColor.DARK_AQUA
+                    player.sendMessage(ChatColor.GREEN + "Forcibly relinquished ownership of the double chest at "
+                            + ChatColor.DARK_AQUA
                             + Util.locToIntString(res.loc) + ChatColor.GREEN + " and " + ChatColor.DARK_AQUA
                             + Util.locToIntString(res.doubleChestLoc) + ChatColor.GREEN + ".");
                 } else {
-                    player.sendMessage(ChatColor.GREEN + "Forcibly relinquished ownership of the chest at " + ChatColor.DARK_AQUA
-                            + Util.locToIntString(res.loc) + ChatColor.GREEN + ".");
+                    player.sendMessage(
+                            ChatColor.GREEN + "Forcibly relinquished ownership of the chest at " + ChatColor.DARK_AQUA
+                                    + Util.locToIntString(res.loc) + ChatColor.GREEN + ".");
                 }
-                logInfo("Player " + player.getName() + " forcibly relinquished ownership of a chest at " + Util.locToIntString(res.loc));
+                logInfo("Player " + player.getName() + " forcibly relinquished ownership of a chest at "
+                        + Util.locToIntString(res.loc));
             } else {
-                if(res.databaseError) {
+                if (res.databaseError) {
                     player.sendMessage(ChatColor.RED + "A database error occurred.");
                 }
             }
@@ -212,7 +223,7 @@ public class LuvstarPlugin extends JavaPlugin {
             result.owner = existingData.owner;
             return result;
         }
-        if(existingData != null && existingData.owner.equals(owner) && existingData.locked == locked) {
+        if (existingData != null && existingData.owner.equals(owner) && existingData.locked == locked) {
             result.successfullyUpdated = false;
             result.isAlreadyInThisState = true;
             return result;
@@ -248,10 +259,11 @@ public class LuvstarPlugin extends JavaPlugin {
         result.successfullyUpdated = true;
         return result;
     }
-    private ChestLockUpdateResult removeChestlock(Block chest, String owner, boolean ignoreDifferentOwner) {
+
+    public ChestLockUpdateResult removeChestlock(Block chest, String owner, boolean ignoreDifferentOwner) {
         ChestLockUpdateResult result = new ChestLockUpdateResult(chest.getLocation());
         ChestLockData existingData = db.getChestLockData(chest.getLocation());
-        if(existingData == null) {
+        if (existingData == null) {
             result.isAlreadyInThisState = true;
             result.successfullyUpdated = false;
             return result;
@@ -263,7 +275,7 @@ public class LuvstarPlugin extends JavaPlugin {
             return result;
         }
         int dbDeleteRes = db.deleteChestLockData(chest.getLocation());
-        if(dbDeleteRes < 0) {
+        if (dbDeleteRes < 0) {
             result.successfullyUpdated = false;
             result.databaseError = true;
             result.owner = owner;

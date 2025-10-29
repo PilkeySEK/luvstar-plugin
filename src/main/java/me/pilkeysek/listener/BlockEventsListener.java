@@ -16,7 +16,11 @@ public class BlockEventsListener extends BlockListener {
             ChestLockData data = LuvstarPlugin.instance.db.getChestLockData(event.getBlock().getLocation());
             
             if(data == null) return;
-            if(data.canDoThingsWith(event.getPlayer())) return;
+            if(data.canDoThingsWith(event.getPlayer())) {
+                // remove from db when chest is destroyed
+                LuvstarPlugin.instance.removeChestlock(event.getBlock(), event.getPlayer().getName(), true);
+                return;
+            }
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + data.owner + ChatColor.RED + ". You can't break it.");
         }
