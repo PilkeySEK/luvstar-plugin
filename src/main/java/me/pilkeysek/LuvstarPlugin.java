@@ -1,6 +1,7 @@
 package me.pilkeysek;
 
 import me.pilkeysek.data.ChestLockData;
+import me.pilkeysek.data.ChestLockUpdateResult;
 import me.pilkeysek.listener.BlockEventsListener;
 import me.pilkeysek.listener.PlayerEventsListener;
 
@@ -14,6 +15,7 @@ import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -72,28 +74,26 @@ public class LuvstarPlugin extends JavaPlugin {
                 player.sendMessage(ChatColor.RED + "Only chests can be locked.");
                 return true;
             }
-            ChestLockData data = db.getChestLockData(targetBlock.getLocation());
-            if (data == null || data.owner.equals(player.getName())) {
-                if (data != null && data.locked == true) {
-                    player.sendMessage(ChatColor.RED + "The chest is already locked.");
-                    return true;
-                }
-                int res = db.setChestLockData(new ChestLockData(targetBlock.getLocation(), player.getName(), true));
-                if (res >= 0) {
-                    if(data == null) {
-                        player.sendMessage(ChatColor.AQUA + "Note: The chest was not owned by anyone, you own it now.");
-                    }
-                    player.sendMessage(ChatColor.GREEN + "Locked the chest at " + (int) targetBlock.getLocation().getX() + " "
-                            + (int) targetBlock.getLocation().getY() + " " + (int) targetBlock.getLocation().getZ() + ".");
-                    return true;
+            ChestLockUpdateResult res = updateChestLock(targetBlock, player.getName(), true);
+            if (res.successfullyUpdated) {
+                if (res.isDoubleChest) {
+                    player.sendMessage(ChatColor.GREEN + "Locked the double chest at " + ChatColor.DARK_AQUA
+                            + Util.locToIntString(res.loc) + ChatColor.GREEN + " and " + ChatColor.DARK_AQUA
+                            + Util.locToIntString(res.doubleChestLoc) + ChatColor.GREEN + ".");
                 } else {
-                    player.sendMessage(ChatColor.RED + "Something went wrong while trying to update the database.");
-                    return true;
+                    player.sendMessage(ChatColor.GREEN + "Locked the chest at " + ChatColor.DARK_AQUA
+                            + Util.locToIntString(res.loc) + ChatColor.GREEN + ".");
                 }
             } else {
-                player.sendMessage(ChatColor.RED + "This chest is owned by " + data.owner + ". You can't lock it.");
-                return true;
+                if(res.databaseError) {
+                    player.sendMessage(ChatColor.RED + "A database error occured.");
+                } else if(res.playerIsNotOwner) {
+                    player.sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + res.owner + ChatColor.RED + ". You can't lock it.");
+                } else if (res.isAlreadyInThisState) {
+                    player.sendMessage(ChatColor.RED + "This chest is already locked.");
+                }
             }
+            return true;
         } else if (cmd.getName().equalsIgnoreCase("unlock")) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage(ChatColor.RED + "You must be a player to use this.");
@@ -109,30 +109,79 @@ public class LuvstarPlugin extends JavaPlugin {
                 player.sendMessage(ChatColor.RED + "Only chests can be unlocked.");
                 return true;
             }
-            ChestLockData data = db.getChestLockData(targetBlock.getLocation());
-            if (data == null || data.owner.equals(player.getName())) {
-                if (data != null && data.locked == false) {
-                    player.sendMessage(ChatColor.RED + "The chest is already unlocked.");
-                    return true;
-                }
-                int res = db.setChestLockData(new ChestLockData(targetBlock.getLocation(), player.getName(), false));
-                if (res >= 0) {
-                    if(data == null) {
-                        player.sendMessage(ChatColor.AQUA + "Note: The chest was not owned by anyone, you own it now.");
-                    }
-                    player.sendMessage(ChatColor.GREEN + "Unlocked the chest at " + (int) targetBlock.getLocation().getX() + " "
-                            + (int) targetBlock.getLocation().getY() + " " + (int) targetBlock.getLocation().getZ() + ".");
-                    return true;
+            ChestLockUpdateResult res = updateChestLock(targetBlock, player.getName(), false);
+            if (res.successfullyUpdated) {
+                if (res.isDoubleChest) {
+                    player.sendMessage(ChatColor.GREEN + "Unlocked the double chest at " + ChatColor.DARK_AQUA
+                            + Util.locToIntString(res.loc) + ChatColor.GREEN + " and " + ChatColor.DARK_AQUA
+                            + Util.locToIntString(res.doubleChestLoc) + ChatColor.GREEN + ".");
                 } else {
-                    player.sendMessage(ChatColor.RED + "Something went wrong while trying to update the database.");
-                    return true;
+                    player.sendMessage(ChatColor.GREEN + "Unlocked the chest at " + ChatColor.DARK_AQUA
+                            + Util.locToIntString(res.loc) + ChatColor.GREEN + ".");
                 }
             } else {
-                player.sendMessage(ChatColor.RED + "This chest is owned by " + data.owner + ". You can't unlock it.");
-                return true;
+                if(res.databaseError) {
+                    player.sendMessage(ChatColor.RED + "A database error occured.");
+                } else if(res.playerIsNotOwner) {
+                    player.sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + res.owner + ChatColor.RED + ". You can't unlock it.");
+                } else if (res.isAlreadyInThisState) {
+                    player.sendMessage(ChatColor.RED + "This chest is already unlocked.");
+                }
             }
+            return true;
         }
         return false;
+    }
+
+    private ChestLockUpdateResult updateChestLock(Block chest, String owner, boolean locked) {
+        return updateChestLock(chest, owner, locked, false);
+    }
+
+    private ChestLockUpdateResult updateChestLock(Block chest, String owner, boolean locked,
+            boolean ignoreDifferentOwner) {
+        ChestLockUpdateResult result = new ChestLockUpdateResult(chest.getLocation());
+        ChestLockData existingData = db.getChestLockData(chest.getLocation());
+        if (!ignoreDifferentOwner && existingData != null && !existingData.owner.equalsIgnoreCase(owner)) {
+            result.successfullyUpdated = false;
+            result.playerIsNotOwner = true;
+            result.owner = existingData.owner;
+            return result;
+        }
+        if(existingData != null && existingData.owner.equals(owner) && existingData.locked == locked) {
+            result.successfullyUpdated = false;
+            result.isAlreadyInThisState = true;
+            return result;
+        }
+        int dbRes = db.setChestLockData(new ChestLockData(chest.getLocation(), owner, locked));
+        if (dbRes < 0) {
+            result.databaseError = true;
+            result.successfullyUpdated = false;
+            return result;
+        }
+        // Check for double chest and update
+        Block adjacentChest = null;
+        if (chest.getRelative(BlockFace.EAST).getType() == Material.CHEST)
+            adjacentChest = chest.getRelative(BlockFace.EAST);
+        else if (chest.getRelative(BlockFace.WEST).getType() == Material.CHEST)
+            adjacentChest = chest.getRelative(BlockFace.WEST);
+        else if (chest.getRelative(BlockFace.NORTH).getType() == Material.CHEST)
+            adjacentChest = chest.getRelative(BlockFace.NORTH);
+        else if (chest.getRelative(BlockFace.SOUTH).getType() == Material.CHEST)
+            adjacentChest = chest.getRelative(BlockFace.SOUTH);
+        if (adjacentChest != null) {
+            int doubleChestDbRes = db.setChestLockData(new ChestLockData(adjacentChest.getLocation(), owner, locked));
+            if (doubleChestDbRes < 0) {
+                result.databaseError = true;
+                result.successfullyUpdated = false;
+                return result;
+            }
+            result.isDoubleChest = true;
+            result.doubleChestLoc = adjacentChest.getLocation();
+        }
+        result.owner = owner;
+        result.playerIsNotOwner = false;
+        result.successfullyUpdated = true;
+        return result;
     }
 
     private void defaultPluginConfig() {

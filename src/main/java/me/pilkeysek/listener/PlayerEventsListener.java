@@ -18,7 +18,7 @@ public class PlayerEventsListener extends PlayerListener {
                 if(data == null) return;
                 if(data.canDoThingsWith(event.getPlayer())) return;
                 event.setCancelled(true);
-                event.getPlayer().sendMessage(ChatColor.RED + "This chest is owned by " + data.owner + ". You can't open it.");
+                event.getPlayer().sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + data.owner + ChatColor.RED + ". You can't open it.");
             }
         }
     }

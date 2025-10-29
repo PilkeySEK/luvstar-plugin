@@ -18,7 +18,7 @@ public class BlockEventsListener extends BlockListener {
             if(data == null) return;
             if(data.canDoThingsWith(event.getPlayer())) return;
             event.setCancelled(true);
-            event.getPlayer().sendMessage(ChatColor.RED + "This chest is owned by " + data.owner + ". You can't break it.");
+            event.getPlayer().sendMessage(ChatColor.RED + "This chest is owned by " + ChatColor.DARK_AQUA + data.owner + ChatColor.RED + ". You can't break it.");
         }
     }
 }
