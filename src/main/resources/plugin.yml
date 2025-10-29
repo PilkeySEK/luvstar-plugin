@@ -11,3 +11,6 @@ commands:
   relinquish:
     description: Stop owning a chest
     usage: /relinquish while looking at the chest
+  frelinquish:
+    description: Force relinquish a chest even if you're not owner. Requires op.
+    usage: /frelinquish while looking at the chest
