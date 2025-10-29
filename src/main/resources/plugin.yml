@@ -10,4 +10,4 @@ commands:
     usage: /unlock while looking at the chest
   relinquish:
     description: Stop owning a chest
-    useage: /relinquish while looking at the chest
+    usage: /relinquish while looking at the chest
