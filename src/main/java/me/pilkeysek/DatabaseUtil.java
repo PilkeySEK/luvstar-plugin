@@ -116,6 +116,7 @@ public class DatabaseUtil {
 
     public int setChestLockData(ChestLockData data) {
         if(connection == null) return -2;
+        System.out.println("Inserting: x=" + data.loc.getX() + " y=" + data.loc.getY() + " z=" + data.loc.getZ() + " owner=" + data.owner + " locked=" + data.locked + " world=" + data.getWorldName());
         return upsertChest(data.getWorldName(), (int) data.loc.getX(), (int) data.loc.getY(), (int) data.loc.getZ(), data.owner, data.locked);
     }
 }

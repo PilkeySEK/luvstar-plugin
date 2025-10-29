@@ -1,6 +1,8 @@
 package me.pilkeysek;
 
 import me.pilkeysek.listener.BlockEventsListener;
+import me.pilkeysek.listener.PlayerEventsListener;
+
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
@@ -35,6 +37,7 @@ public class LuvstarPlugin extends JavaPlugin {
             pluginConfig.getString("postgres_password")
         );
         getServer().getPluginManager().registerEvent(Type.BLOCK_BREAK, new BlockEventsListener(), Priority.Highest, this);
+        getServer().getPluginManager().registerEvent(Type.PLAYER_INTERACT, new PlayerEventsListener(), Priority.Highest, this);
         getServer().getLogger().info("Luvstar Plugin initialized");
     }
     @Override
