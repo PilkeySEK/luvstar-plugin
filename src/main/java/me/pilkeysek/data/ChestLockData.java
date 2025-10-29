@@ -24,4 +24,9 @@ public class ChestLockData {
         if(this.owner.equals(player.getName())) return true;
         return false;
     }
+
+    @Override
+    public String toString() {
+        return String.format("ChestLockData(x=%d y=%d z=%d world='%s' owner='%s' locked=%b)", (int) loc.getX(), (int) loc.getY(), (int) loc.getZ(), loc.getWorld().getName(), owner, locked);
+    }
 }

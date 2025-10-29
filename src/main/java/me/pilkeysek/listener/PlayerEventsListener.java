@@ -12,11 +12,9 @@ import me.pilkeysek.data.ChestLockData;
 public class PlayerEventsListener extends PlayerListener {
     @Override
     public void onPlayerInteract(PlayerInteractEvent event) {
-        LuvstarPlugin.instance.logInfo("Event");
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if(event.getClickedBlock().getType() == Material.CHEST) {
                 ChestLockData data = LuvstarPlugin.instance.db.getChestLockData(event.getClickedBlock().getLocation());
-                LuvstarPlugin.instance.logInfo("DATA: " + data);
                 if(data == null) return;
                 if(data.canDoThingsWith(event.getPlayer())) return;
                 event.setCancelled(true);

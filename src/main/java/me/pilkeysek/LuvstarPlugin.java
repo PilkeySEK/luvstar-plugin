@@ -74,12 +74,15 @@ public class LuvstarPlugin extends JavaPlugin {
             }
             ChestLockData data = db.getChestLockData(targetBlock.getLocation());
             if (data == null || data.owner.equals(player.getName())) {
-                if (data != null && data.locked) {
+                if (data != null && data.locked == true) {
                     player.sendMessage(ChatColor.RED + "The chest is already locked.");
                     return true;
                 }
-                int res = db.setChestLockData(data == null ? new ChestLockData(targetBlock.getLocation(), player.getName(), true) : data);
-                if (res >= 1) {
+                int res = db.setChestLockData(new ChestLockData(targetBlock.getLocation(), player.getName(), true));
+                if (res >= 0) {
+                    if(data == null) {
+                        player.sendMessage(ChatColor.AQUA + "Note: The chest was not owned by anyone, you own it now.");
+                    }
                     player.sendMessage(ChatColor.GREEN + "Locked the chest at " + (int) targetBlock.getLocation().getX() + " "
                             + (int) targetBlock.getLocation().getY() + " " + (int) targetBlock.getLocation().getZ() + ".");
                     return true;
@@ -89,6 +92,43 @@ public class LuvstarPlugin extends JavaPlugin {
                 }
             } else {
                 player.sendMessage(ChatColor.RED + "This chest is owned by " + data.owner + ". You can't lock it.");
+                return true;
+            }
+        } else if (cmd.getName().equalsIgnoreCase("unlock")) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(ChatColor.RED + "You must be a player to use this.");
+                return true;
+            }
+            Player player = (Player) sender;
+            Block targetBlock = player.getTargetBlock(null, 5);
+            if (targetBlock.getType() == Material.AIR) {
+                player.sendMessage(ChatColor.RED + "Too far away.");
+                return true;
+            }
+            if (targetBlock.getType() != Material.CHEST) {
+                player.sendMessage(ChatColor.RED + "Only chests can be unlocked.");
+                return true;
+            }
+            ChestLockData data = db.getChestLockData(targetBlock.getLocation());
+            if (data == null || data.owner.equals(player.getName())) {
+                if (data != null && data.locked == false) {
+                    player.sendMessage(ChatColor.RED + "The chest is already unlocked.");
+                    return true;
+                }
+                int res = db.setChestLockData(new ChestLockData(targetBlock.getLocation(), player.getName(), false));
+                if (res >= 0) {
+                    if(data == null) {
+                        player.sendMessage(ChatColor.AQUA + "Note: The chest was not owned by anyone, you own it now.");
+                    }
+                    player.sendMessage(ChatColor.GREEN + "Unlocked the chest at " + (int) targetBlock.getLocation().getX() + " "
+                            + (int) targetBlock.getLocation().getY() + " " + (int) targetBlock.getLocation().getZ() + ".");
+                    return true;
+                } else {
+                    player.sendMessage(ChatColor.RED + "Something went wrong while trying to update the database.");
+                    return true;
+                }
+            } else {
+                player.sendMessage(ChatColor.RED + "This chest is owned by " + data.owner + ". You can't unlock it.");
                 return true;
             }
         }
