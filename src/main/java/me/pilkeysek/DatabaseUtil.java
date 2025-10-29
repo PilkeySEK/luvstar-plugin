@@ -119,7 +119,7 @@ public class DatabaseUtil {
         return upsertChest(data.getWorldName(), (int) data.loc.getX(), (int) data.loc.getY(), (int) data.loc.getZ(), data.owner, data.locked);
     }
 
-    public int deleteChestLockDAta(Location loc) {
+    public int deleteChestLockData(Location loc) {
         if(connection == null) return -2;
         String sql = "DELETE FROM chests WHERE x = ? AND y = ? AND z = ? AND world = ?";
         try {

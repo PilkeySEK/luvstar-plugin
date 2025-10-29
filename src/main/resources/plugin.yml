@@ -4,7 +4,10 @@ version: 0.1
 commands:
   lock:
     description: Lock a chest
-    usage: \"/lock\" while looking at the chest
+    usage: /lock while looking at the chest
   unlock:
     description: Unlock a chest
-    usage: \"/unlock\"" while looking at the chest
+    usage: /unlock while looking at the chest
+  relinquish:
+    description: Stop owning a chest
+    useage: /relinquish while looking at the chest
