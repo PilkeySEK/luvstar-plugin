@@ -6,6 +6,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 
 import me.pilkeysek.LuvstarPlugin;
+import me.pilkeysek.Util;
 import me.pilkeysek.data.ChestLockData;
 
 public class BlockEventsListener extends BlockListener {
@@ -18,7 +19,7 @@ public class BlockEventsListener extends BlockListener {
             if(data == null) return;
             if(data.canDoThingsWith(event.getPlayer())) {
                 // remove from db when chest is destroyed
-                LuvstarPlugin.instance.removeChestlock(event.getBlock(), event.getPlayer().getName(), true);
+                Util.removeChestlock(event.getBlock(), event.getPlayer().getName(), true);
                 return;
             }
             event.setCancelled(true);
