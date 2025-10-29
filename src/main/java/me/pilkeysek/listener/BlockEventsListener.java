@@ -9,6 +9,7 @@ import me.pilkeysek.data.ChestLockData;
 
 public class BlockEventsListener extends BlockListener {
 
+    @Override
     public void onBlockBreak(BlockBreakEvent event) {
         ChestLockData data = LuvstarPlugin.instance.db.getChestLockData(event.getBlock().getLocation());
         if(data == null) {
