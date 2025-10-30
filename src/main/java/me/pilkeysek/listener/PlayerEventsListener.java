@@ -11,8 +11,8 @@ import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
 
 import me.pilkeysek.LuvstarPlugin;
-import me.pilkeysek.Util;
 import me.pilkeysek.data.ChestLockData;
+import me.pilkeysek.locking.SignUtil;
 
 public class PlayerEventsListener extends PlayerListener {
     @Override
@@ -28,7 +28,7 @@ public class PlayerEventsListener extends PlayerListener {
                         // Cancel event to prevent opening chest and instead place sign
                         event.setCancelled(true);
                         relativeBlock.setType(Material.WALL_SIGN);
-                        relativeBlock.setData(Util.blockFaceToSignRotationData(blockFace));
+                        relativeBlock.setData(SignUtil.blockFaceToSignRotationData(blockFace));
                         Sign sign = (Sign) relativeBlock.getState();
                         sign.setLine(0, "[private]");
                         if(event.getPlayer().getItemInHand().getAmount() != 1) {

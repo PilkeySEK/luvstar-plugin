@@ -1,20 +1,16 @@
 package me.pilkeysek.locking;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.material.MaterialData;
 
 import me.pilkeysek.LuvstarPlugin;
 import me.pilkeysek.data.ChestLockData;
 
 public class LockAPI {
-    private final BlockFace[] possibleSignFaces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+    public static final BlockFace[] possibleSignFaces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
     public boolean isLocked(Block block) {
         if(block.getType() == Material.CHEST) {
             for(BlockFace face : possibleSignFaces) {

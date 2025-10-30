@@ -45,12 +45,16 @@ public class LuvstarPlugin extends JavaPlugin {
             pluginConfig.getString("postgres_user"),
             pluginConfig.getString("postgres_password"));
         this.lockAPI = new LockAPI();
-        getServer().getPluginManager().registerEvent(Type.BLOCK_BREAK, new BlockEventsListener(), Priority.Highest,
+
+        PlayerEventsListener playerEventsListener = new PlayerEventsListener();
+        BlockEventsListener blockEventsListener = new BlockEventsListener();
+        getServer().getPluginManager().registerEvent(Type.BLOCK_BREAK, blockEventsListener, Priority.Highest,
                 this);
-        getServer().getPluginManager().registerEvent(Type.PLAYER_INTERACT, new PlayerEventsListener(), Priority.Highest,
+        getServer().getPluginManager().registerEvent(Type.PLAYER_INTERACT, playerEventsListener, Priority.Highest,
                 this);
         getServer().getPluginManager().registerEvent(Type.ENTITY_EXPLODE, new EntityEventsListener(), Priority.Highest,
                 this);
+        getServer().getPluginManager().registerEvent(Type.SIGN_CHANGE, blockEventsListener, Priority.Highest, this);
         
         getCommand("lock").setExecutor(new LockCommandExecutor());
         getCommand("unlock").setExecutor(new UnlockCommandExecutor());

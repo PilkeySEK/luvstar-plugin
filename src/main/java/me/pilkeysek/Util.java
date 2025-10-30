@@ -1,5 +1,8 @@
 package me.pilkeysek;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -108,18 +111,15 @@ public class Util {
         return result;
     }
 
-    public static byte blockFaceToSignRotationData(BlockFace blockFace) {
-        switch (blockFace) {
-            case NORTH:
-                return 4;
-            case SOUTH:
-                return 5;
-            case EAST:
-                return 2;
-            case WEST:
-                return 3;
-            default:
-                return 3;
+    public static <T> ArrayList<T> listToArrayList(T[] list) {
+        ArrayList<T> arrayList = new ArrayList<>();
+        for(int i = 0; i < list.length; i++) {
+            arrayList.add(list[i]);
         }
+        return arrayList;
+    }
+
+    public static String[] listToStringArray(List<String> list) {
+        return list.toArray(new String[0]);
     }
 }
